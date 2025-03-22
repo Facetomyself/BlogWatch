@@ -13,7 +13,8 @@ class UAPool:
         """
         self.ua_list: List[str] = []
         self.current_index = 0
-        self.load_ua_file(ua_file)
+        # 不应该在初始化时就加载文件，因为文件路径可能会被修改
+        # self.load_ua_file(ua_file)  # 删除这行
         
     def load_ua_file(self, ua_file: str):
         """加载UA文件"""

@@ -1,6 +1,6 @@
 # 认证配置
 auth:
-  token: "your_token_here"  # 图床服务的认证token
+  token: 'you-token'
 
 # 监控配置
 monitor:
@@ -10,7 +10,7 @@ monitor:
 
 # UA池配置
 ua_pool:
-  file: "./ua.tet"  # UA文件路径（使用相对路径）
+  file: './ua/ua.tet'  # UA文件路径（使用相对路径）
   change_interval: 60  # UA更换间隔（请求次数）
 
 # 线程池配置
@@ -24,4 +24,4 @@ rate_limit:
 
 # 存储配置
 storage:
-  path: "./storage"  # 存储路径（使用相对路径） 
+  path: './storage'  # 存储路径（使用相对路径） 

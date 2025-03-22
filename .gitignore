@@ -34,8 +34,12 @@ env/
 .DS_Store
 
 # Project specific
-config.yaml
-storage/
+config/config.yaml
+!config/config.yaml.example
+storage/*
+!storage/.gitkeep
+ua/*
+!ua/.gitkeep
 *.log
 ua.tet
 message.json

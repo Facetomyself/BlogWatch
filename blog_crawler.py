@@ -33,7 +33,7 @@ class BlogCrawler:
         self.ua_lock = threading.Lock()
         
         # 加载UA文件
-        ua_file = config['ua_pool']['file']
+        ua_file = os.path.abspath(config['ua_pool']['file'])
         if not os.path.exists(ua_file):
             raise FileNotFoundError(f"UA文件不存在: {ua_file}")
         self.ua_pool.load_ua_file(ua_file)
@@ -56,7 +56,7 @@ class BlogCrawler:
         )
         
         # 存储路径配置
-        self.base_dir = config['storage']['path']
+        self.base_dir = os.path.abspath(config['storage']['path'])
         self.temp_dir = os.path.join(self.base_dir, "temp")
         self.markdown_dir = os.path.join(self.base_dir, "markdown")
         self.message_file = os.path.join(self.base_dir, "message.json")
@@ -171,16 +171,21 @@ class BlogCrawler:
         Returns:
             requests.Response: 响应对象
         """
-        # 仅在需要时等待限速器
-        if need_rate_limit:
-            self.rate_limiter.wait()
-        
-        # 更新请求头
-        kwargs['headers'] = self._get_headers()
-        
-        # 发送请求
-        response = requests.request(method, url, **kwargs)
-        return response
+        try:
+            # 仅在需要时等待限速器
+            if need_rate_limit:
+                self.rate_limiter.wait()
+            
+            # 更新请求头
+            kwargs['headers'] = self._get_headers()
+            
+            # 发送请求
+            response = requests.request(method, url, **kwargs)
+            response.raise_for_status()
+            return response
+        except requests.RequestException as e:
+            print(f"请求失败: {str(e)}")
+            raise
 
     def crawl_incremental(self, force_download: bool = False) -> List[str]:
         """增量下载文章内容（多线程版本）"""
@@ -497,5 +502,9 @@ class BlogCrawler:
 
     def __del__(self):
         """清理资源"""
-        self.executor.shutdown(wait=True)
+        try:
+            if hasattr(self, 'executor'):
+                self.executor.shutdown(wait=True)
+        except Exception as e:
+            print(f"清理资源时发生错误: {str(e)}")
 
