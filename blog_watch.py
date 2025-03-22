@@ -14,7 +14,7 @@ def load_config(config_path=None):
             'force_download': False
         },
         'ua_pool': {
-            'file': './ua.tet',
+            'file': './ua/ua.tet',
             'change_interval': 60
         },
         'thread_pool': {'max_workers': 5},
@@ -26,13 +26,14 @@ def load_config(config_path=None):
     }
     
     # 首先尝试加载默认的config.yaml
-    default_yaml = 'config.yaml'
+    default_yaml = os.path.join(os.getcwd(), 'config', 'config.yaml')
     if os.path.exists(default_yaml) and not config_path:
         config_path = default_yaml
         print(f"使用默认配置文件: {default_yaml}")
     
-    # 如果指定了配置文件路径
+    # 如果指定了配置文件路径，确保使用绝对路径
     if config_path:
+        config_path = os.path.abspath(config_path)
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"配置文件不存在: {config_path}")
             

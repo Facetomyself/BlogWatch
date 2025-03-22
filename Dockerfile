@@ -9,22 +9,20 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 创建必要目录
-RUN mkdir -p /app/storage
+RUN mkdir -p /app/config /app/storage /app/ua
 
-# 复制配置文件
-COPY config.yaml /app/config.yaml
-
-# 复制其他项目文件
-COPY . .
+# 复制项目文件
+COPY *.py /app/
+COPY config/config.yaml.example /app/config/config.yaml.example
 
 # 设置环境变量
 ENV PYTHONUNBUFFERED=1 \
-    CONFIG_PATH=/app/config.yaml \
+    CONFIG_PATH=/app/config/config.yaml \
     AUTH_TOKEN="" \
     MONITOR_INTERVAL=3600 \
     AUTO_DOWNLOAD=true \
     FORCE_DOWNLOAD=false \
-    UA_FILE=ua.txt \
+    UA_FILE=/app/ua/ua.tet \
     UA_CHANGE_INTERVAL=60 \
     MAX_WORKERS=5 \
     RATE_LIMIT=5 \
@@ -32,7 +30,7 @@ ENV PYTHONUNBUFFERED=1 \
     STORAGE_PATH=/app/storage
 
 # 声明数据卷
-VOLUME ["/app/storage", "/app/config.yaml", "/app/ua.txt"]
+VOLUME ["/app/storage", "/app/config", "/app/ua"]
 
 # 启动命令
 ENTRYPOINT ["python", "blog_watch.py"] 

@@ -18,6 +18,25 @@
 - Docker (可选)
 - PyYAML
 
+## 目录结构
+
+```plaintext
+project_root/
+├── config/
+│   ├── config.yaml        # 实际配置文件
+│   └── config.yaml.example # 配置文件示例
+├── ua/
+│   └── ua.tet            # UA文件
+├── storage/              # 存储目录
+│   ├── markdown/         # Markdown文件存储
+│   └── temp/            # 临时文件目录
+├── blog_watch.py        # 主程序
+├── blog_crawler.py      # 爬虫核心
+├── requirements.txt     # 依赖列表
+├── Dockerfile          # Docker构建文件
+└── README.md          # 说明文档
+```
+
 ## 安装说明
 
 ### 方式一：直接运行
@@ -35,7 +54,7 @@ pip install -r requirements.txt
 
 3. 配置config.yaml
 ```bash
-cp config.yaml.example config.yaml
+cp config/config.yaml.example config/config.yaml
 # 编辑config.yaml设置你的配置
 ```
 
@@ -46,32 +65,32 @@ python blog_watch.py
 
 ### 方式二：Docker部署
 
-1. 构建镜像
+1. 准备目录结构：
 ```bash
-docker build -t blog-watch .
+mkdir -p config ua storage
+cp config.yaml.example config/config.yaml
+# 编辑 config/config.yaml 设置你的配置
+# 将UA文件复制到 ua/ua.tet
 ```
 
-2. 准备配置文件
+2. 构建镜像
 ```bash
-cp config.yaml.example my-config.yaml
-# 编辑my-config.yaml设置你的配置
+docker build -t blog-watch .
 ```
 
 3. 运行容器
 ```bash
 docker run -d \
   --name blog-watch \
-  -v $(pwd)/my-config.yaml:/app/config.yaml \
+  -v $(pwd)/config:/app/config \
   -v $(pwd)/storage:/app/storage \
-  -v $(pwd)/ua.txt:/app/ua.txt \
-  -e AUTH_TOKEN=your_token \
-  -e MONITOR_INTERVAL=1800 \
+  -v $(pwd)/ua:/app/ua \
   blog-watch
 ```
 
 ## 配置说明
 
-### 配置文件 (config.yaml)
+### 配置文件 (config/config.yaml)
 
 ```yaml
 # 认证配置
@@ -86,7 +105,7 @@ monitor:
 
 # UA池配置
 ua_pool:
-  file: "ua.txt"  # UA文件路径
+  file: "./ua/ua.tet"  # UA文件路径（使用相对路径）
   change_interval: 60  # UA更换间隔（请求次数）
 
 # 线程池配置
@@ -100,10 +119,10 @@ rate_limit:
 
 # 存储配置
 storage:
-  path: "/app/storage"  # 存储路径
+  path: "./storage"  # 存储路径（使用相对路径）
 ```
 
-### Docker环境变量
+### 环境变量配置
 
 所有配置项都可以通过环境变量覆盖，环境变量优先级高于配置文件：
 
@@ -113,7 +132,7 @@ storage:
 | MONITOR_INTERVAL | monitor.interval | 3600 |
 | AUTO_DOWNLOAD | monitor.auto_download | true |
 | FORCE_DOWNLOAD | monitor.force_download | false |
-| UA_FILE | ua_pool.file | ua.txt |
+| UA_FILE | ua_pool.file | /app/ua/ua.tet |
 | UA_CHANGE_INTERVAL | ua_pool.change_interval | 60 |
 | MAX_WORKERS | thread_pool.max_workers | 5 |
 | RATE_LIMIT | rate_limit.requests_per_minute | 5 |
@@ -124,48 +143,43 @@ storage:
 
 ### 使用配置文件
 ```bash
-# 直接使用配置文件运行
+# 直接使用默认配置文件运行
 python blog_watch.py
 
 # 指定配置文件路径
 python blog_watch.py --config /path/to/config.yaml
 ```
 
-### Docker环境变量配置
+### 使用环境变量
 ```bash
-docker run -d \
-  --name blog-watch \
-  -v $(pwd)/storage:/app/storage \
-  -e AUTH_TOKEN=your_token \
-  -e MONITOR_INTERVAL=1800 \
-  -e MAX_WORKERS=10 \
-  -e RATE_LIMIT=10 \
-  blog-watch
+# 设置环境变量
+export AUTH_TOKEN="your-token"
+export MONITOR_INTERVAL=1800
+python blog_watch.py
 ```
 
 ## 注意事项
 
-1. 配置优先级：环境变量 > 命令行参数 > 配置文件 > 默认值
-2. 建议将敏感信息（如token）通过环境变量传入
-3. 建议将配置文件、storage目录和ua.txt文件挂载到容器外
-4. 请遵守目标网站的robots.txt规则
+1. 配置文件现在位于 `config` 目录下
+2. UA文件应命名为 `ua.tet` 并放置在 `ua` 目录下
+3. 所有路径配置都使用相对路径，相对于项目根目录
+4. Docker部署时需要正确挂载三个目录：
+   - `config`: 配置文件目录
+   - `storage`: 存储目录
+   - `ua`: UA文件目录
 
 ## 常见问题
 
 1. 如何修改配置？
-   - 直接编辑config.yaml文件
-   - 或通过环境变量覆盖配置
-   - 或通过命令行参数指定
+   - 编辑 config/config.yaml 文件
+   - 通过环境变量覆盖配置
+   - 通过命令行参数指定配置文件
 
-2. 如何更新UA池？
-   - 直接编辑ua.txt文件即可
-   - 确保文件已挂载到容器中
-
-3. 如何查看运行日志？
+2. 如何查看运行日志？
    - 直接运行模式下查看控制台输出
    - Docker模式下使用 `docker logs blog-watch`
 
-4. 如何停止服务？
+3. 如何停止服务？
    - 直接运行模式：Ctrl+C
    - Docker模式：`docker stop blog-watch`
 
