@@ -1,0 +1,27 @@
+# 认证配置
+auth:
+  token: "your_token_here"  # 图床服务的认证token
+
+# 监控配置
+monitor:
+  interval: 3600  # 检查间隔时间（秒）
+  auto_download: true  # 是否自动下载
+  force_download: false  # 是否强制重新下载
+
+# UA池配置
+ua_pool:
+  file: "./ua.tet"  # UA文件路径（使用相对路径）
+  change_interval: 60  # UA更换间隔（请求次数）
+
+# 线程池配置
+thread_pool:
+  max_workers: 5  # 最大线程数
+
+# 限速配置
+rate_limit:
+  requests_per_minute: 5  # 每分钟最大请求数
+  window: 60  # 限速时间窗口（秒）
+
+# 存储配置
+storage:
+  path: "./storage"  # 存储路径（使用相对路径） 
